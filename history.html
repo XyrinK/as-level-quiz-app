@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Quiz History</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="container">
+    <h2>📚 Past Quiz Results</h2>
+
+    {% if history %}
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Subject</th>
+            <th>Topic</th>
+            <th>Difficulty</th>
+            <th>Score</th>
+            <th>Percentage</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for entry in history %}
+          <tr>
+            <td>{{ entry.timestamp }}</td>
+            <td>{{ entry.subject }}</td>
+            <td>{{ entry.topic }}</td>
+            <td>{{ entry.difficulty }}</td>
+            <td>{{ entry.score }}/{{ entry.total }}</td>
+            <td>{{ entry.percentage }}%</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p>No quiz history available yet.</p>
+    {% endif %}
+
+    <a href="/" class="button">Back to Home</a>
+  </div>
+</body>
+</html>

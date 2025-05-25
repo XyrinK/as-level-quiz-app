@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Quiz Review</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="container">
+    <h2>Quiz Review</h2>
+    <p class="text-muted">Subject: {{ subject }} | Topic: {{ topic }}</p>
+
+    {% for item in review_data %}
+      <div class="review-item {% if item.correct %}correct{% else %}incorrect{% endif %}">
+        <p><strong>Q{{ loop.index }}:</strong> {{ item.question }}</p>
+
+        {% for opt in item.options %}
+          <div>
+            {% if opt == item.correct_answer %}
+              ✅ <strong>{{ opt }}</strong>
+            {% elif opt == item.user_answer %}
+              ❌ <strong style="color: red;">{{ opt }}</strong>
+            {% else %}
+              {{ opt }}
+            {% endif %}
+          </div>
+        {% endfor %}
+
+        {% if item.explanation %}
+        <p><strong>Explanation:</strong> {{ item.explanation }}</p>
+        {% else %}
+        <p class="text-muted"><em>No explanation provided.</em></p>
+        {% endif %}
+      </div>
+    {% endfor %}
+
+    <a href="/" class="button">Back to Home</a>
+  </div>
+</body>
+</html>
