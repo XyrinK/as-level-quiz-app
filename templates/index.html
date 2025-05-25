@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AS/A Level Exam Prep</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script>
+      const topicMap = {
+        "Physics": ["Mechanics", "Electricity"],
+        "Chemistry": ["Organic Chemistry", "Electrochemistry"]
+      };
+
+      function populateTopics() {
+        const subjectSelect = document.getElementById("subject");
+        const topicSelect = document.getElementById("topic");
+        const selectedSubject = subjectSelect.value;
+
+        topicSelect.innerHTML = "<option value=''>Select Topic</option>";
+        if (topicMap[selectedSubject]) {
+          topicMap[selectedSubject].forEach(topic => {
+            const option = document.createElement("option");
+            option.value = topic;
+            option.textContent = topic;
+            topicSelect.appendChild(option);
+          });
+        }
+      }
+    </script>
+</head>
+<body>
+    <div class="container my-5">
+        <div class="card shadow-lg border-0">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="display-6 mb-0">AS/A Level Exam Preparation</h1>
+                    <p class="mb-0">Oasis International School</p>
+                </div>
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" style="height: 60px; border-radius: 50%;">
+            </div>
+            <div class="card-body p-4">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h2>Start Your Practice Quiz</h2>
+                        <p class="text-muted">Select your subject, topic, and difficulty level to begin.</p>
+                        
+                        <form method="POST" class="mt-4">
+                            <div class="mb-3">
+                                <label for="subject" class="form-label fw-bold">Subject:</label>
+                                <select id="subject" name="subject" class="form-select" required onchange="populateTopics()">
+                                    <option value="">Select Subject</option>
+                                    {% for subject in subjects %}
+                                        <option value="{{ subject }}">{{ subject }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="topic" class="form-label fw-bold">Topic:</label>
+                                <select id="topic" name="topic" class="form-select" required>
+                                    <option value="">Select Topic</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="difficulty" class="form-label fw-bold">Difficulty:</label>
+                                <select id="difficulty" name="difficulty" class="form-select" required>
+                                    <option value="">Select Difficulty</option>
+                                    <option value="All Levels">All Levels</option>
+                                    <option value="1">Level 1 - Basic</option>
+                                    <option value="2">Level 2 - Advanced</option>
+                                    <option value="3">Level 3 - Expert</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="num_questions" class="form-label fw-bold">Number of Questions:</label>
+                                <select id="num_questions" name="num_questions" class="form-select">
+                                    <option value="5">5 questions</option>
+                                    <option value="10" selected>10 questions</option>
+                                    <option value="15">15 questions</option>
+                                    <option value="20">20 questions</option>
+                                </select>
+                            </div>
+                            
+                            {% if error %}
+                                <div class="alert alert-danger">{{ error }}</div>
+                            {% endif %}
+                            
+                            <button type="submit" class="btn btn-primary w-100 mt-3 py-2">
+                                <span class="me-2">Start Quiz</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-right" viewBox="0 0 16 16">
+                                    <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
+                                </svg>
+                            </button>
+                        </form>
+                    </div>
+                    <div class="col-md-6 d-flex align-items-center justify-content-center">
+                        <div class="text-center p-4">
+                            <div class="mb-4">
+                                <img src="{{ url_for('static', filename='logo.png') }}" alt="Exam Prep Logo" class="img-fluid rounded-circle shadow" style="width: 150px; height: 150px;">
+                            </div>
+                            <h3>Why Use This Tool?</h3>
+                            <ul class="list-unstyled text-start">
+                                <li class="mb-2">✅ Topics aligned with Cambridge AS/A-Level curriculum</li>
+                                <li class="mb-2">✅ Covers Physics and Chemistry core concepts</li>
+                                <li class="mb-2">✅ Immediate feedback and explanations</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
