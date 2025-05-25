@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Results</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="container">
+    <h2>Your Score:</h2>
+    <p>You got {{ score }} out of {{ total }} correct.</p>
+    <p>Percentage: {{ percent }}%</p>
+    <p>{{ message }}</p>
+
+    <a href="/review" class="button">Review Answers</a>
+    <a href="/history" class="button">View Past Results</a>
+    <a href="/" class="button">Back to Home</a>
+
+    <hr>
+    <h3>Rate This Website</h3>
+    <form method="POST" action="/submit_site_feedback">
+      <label for="site_rating">Star Rating (1 to 5):</label><br>
+      {% for i in range(1, 6) %}
+        <input type="radio" id="star{{ i }}" name="site_rating" value="{{ i }}" required>
+        <label for="star{{ i }}">{{ i }}</label>
+      {% endfor %}<br><br>
+
+      <label for="site_comment">Feedback (optional):</label><br>
+      <textarea id="site_comment" name="site_comment" rows="4" cols="50" placeholder="Tell us what you liked or what we could improve..."></textarea><br><br>
+
+      <button type="submit" class="button">Submit Feedback</button>
+    </form>
+  </div>
+</body>
+</html>
