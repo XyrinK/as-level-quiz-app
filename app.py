@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, session, j
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
-from models import db, User
+from models import db, User, QuizHistory
 import json
 import random
 import os
@@ -10,7 +10,18 @@ from datetime import datetime
 
 app = Flask(__name__)
 app.secret_key = 'exam_secret_key_enhanced'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///quiz.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['TEMPLATES_AUTO_RELOAD'] = True
+
+db.init_app(app)
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
 
 def load_questions():
     with open("questions.json", encoding="utf-8") as f:
@@ -18,7 +29,6 @@ def load_questions():
 
 def select_questions(subject, topic, difficulty, num=10):
     questions_data = load_questions()
-    
     if topic == "All Topics":
         all_questions = []
         for t in questions_data[subject]:
@@ -188,21 +198,28 @@ def result():
     else:
         message = "Keep practicing. You'll improve with time."
 
-    # Save result to session history
-    quiz_record = {
-        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "subject": session.get("subject"),
-        "topic": session.get("topic"),
-        "difficulty": session.get("difficulty"),
-        "score": correct_count,
-        "total": total,
-        "percentage": percent
-    }
+    def calculate_xyrinpoints(correct, total, duration):
+        base = correct * 10
+        speed_bonus = max(0, (1 - duration / (total * 180)))
+        return int(base + base * speed_bonus * 0.5)
 
-    if "quiz_history" not in session:
-        session["quiz_history"] = []
-
-    session["quiz_history"].append(quiz_record)
+    if current_user.is_authenticated:
+        xpoints = calculate_xyrinpoints(correct_count, total, duration_seconds)
+        new_history = QuizHistory(
+            user_id=current_user.id,
+            subject=session.get("subject"),
+            topic=session.get("topic"),
+            difficulty=session.get("difficulty"),
+            score=correct_count,
+            total=total,
+            percentage=percent,
+            timestamp=datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        )
+        db.session.add(new_history)
+        current_user.xyrinpoints += xpoints
+        db.session.commit()
+    else:
+        xpoints = 0
 
     return render_template("result.html",
                            score=correct_count,
@@ -212,52 +229,26 @@ def result():
                            message=message,
                            duration=duration,
                            subject=session["subject"],
-                           topic=session["topic"])
+                           topic=session["topic"],
+                           xyrinpoints=xpoints)
 
 @app.route("/history")
+@login_required
 def history():
-    history_data = session.get("quiz_history", [])
-    return render_template("history.html", history=history_data)
+    user_history = QuizHistory.query.filter_by(user_id=current_user.id).order_by(QuizHistory.timestamp.desc()).all()
+    return render_template("history.html", history=user_history)
 
 @app.route("/rate_question", methods=["POST"])
 def rate_question():
     data = request.get_json()
-    question_idx = data.get("question_idx")
-    rating = data.get("rating")
     return jsonify({"success": True})
 
 @app.route("/submit_feedback", methods=["POST"])
 def submit_feedback():
-    feedback = request.form.get("feedback")
-    helpful = request.form.get("helpful")
-    return redirect(url_for("result", feedback=feedback))
+    return redirect(url_for("result"))
 
 @app.route("/submit_site_feedback", methods=["POST"])
 def submit_site_feedback():
-    rating = request.form.get("site_rating")
-    comment = request.form.get("site_comment")
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-    feedback = {
-        "timestamp": timestamp,
-        "rating": rating,
-        "comment": comment
-    }
-
-    try:
-        if os.path.exists("site_feedback.json"):
-            with open("site_feedback.json", "r") as f:
-                all_feedback = json.load(f)
-        else:
-            all_feedback = []
-
-        all_feedback.append(feedback)
-
-        with open("site_feedback.json", "w") as f:
-            json.dump(all_feedback, f, indent=2)
-    except Exception as e:
-        print("Feedback save error:", e)
-
     return redirect(url_for("index"))
 
 @app.route('/signup', methods=['GET', 'POST'])
@@ -298,4 +289,6 @@ def logout():
     return redirect(url_for('index'))
 
 if __name__ == "__main__":
+    with app.app_context():
+        db.create_all()
     app.run(debug=True)

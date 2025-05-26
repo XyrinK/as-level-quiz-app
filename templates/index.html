@@ -31,6 +31,17 @@
 </head>
 <body>
     <div class="container my-5">
+        {% if current_user.is_authenticated %}
+        <div class="text-end text-muted mb-3">
+            Welcome, {{ current_user.email }} | 💰 <strong>{{ current_user.xyrinpoints }}</strong> Xyrinpoints |
+            <a href="{{ url_for('logout') }}">Logout</a>
+        </div>
+        {% else %}
+        <div class="text-end text-muted mb-3">
+            <a href="{{ url_for('login') }}">Login</a> | <a href="{{ url_for('signup') }}">Sign Up</a>
+        </div>
+        {% endif %}
+
         <div class="card shadow-lg border-0">
             <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                 <div>
@@ -44,7 +55,7 @@
                     <div class="col-md-6">
                         <h2>Start Your Practice Quiz</h2>
                         <p class="text-muted">Select your subject, topic, and difficulty level to begin.</p>
-                        
+
                         <form method="POST" class="mt-4">
                             <div class="mb-3">
                                 <label for="subject" class="form-label fw-bold">Subject:</label>
@@ -55,14 +66,14 @@
                                     {% endfor %}
                                 </select>
                             </div>
-                            
+
                             <div class="mb-3">
                                 <label for="topic" class="form-label fw-bold">Topic:</label>
                                 <select id="topic" name="topic" class="form-select" required>
                                     <option value="">Select Topic</option>
                                 </select>
                             </div>
-                            
+
                             <div class="mb-3">
                                 <label for="difficulty" class="form-label fw-bold">Difficulty:</label>
                                 <select id="difficulty" name="difficulty" class="form-select" required>
@@ -73,7 +84,7 @@
                                     <option value="3">Level 3 - Expert</option>
                                 </select>
                             </div>
-                            
+
                             <div class="mb-3">
                                 <label for="num_questions" class="form-label fw-bold">Number of Questions:</label>
                                 <select id="num_questions" name="num_questions" class="form-select">
@@ -83,11 +94,11 @@
                                     <option value="20">20 questions</option>
                                 </select>
                             </div>
-                            
+
                             {% if error %}
                                 <div class="alert alert-danger">{{ error }}</div>
                             {% endif %}
-                            
+
                             <button type="submit" class="btn btn-primary w-100 mt-3 py-2">
                                 <span class="me-2">Start Quiz</span>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-right" viewBox="0 0 16 16">
